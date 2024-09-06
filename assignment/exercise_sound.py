@@ -30,10 +30,27 @@ duration: float = 0.1  # seconds
 
 print("Playing frequency (Hz):")
 
-for i in range(64):
-    print(freq)
-    playtone(freq, duration)
-    freq = int(freq * 1.1)
+# for i in range(64):
+#     print(freq)
+#     playtone(freq, duration)
+#     freq = int(freq * 1.1)
+
+mario_theme_frequencies = [
+    659, 659, 659, 523, 659, 784, 392, 523, 392, 330, 440, 494, 466, 440, 392, 659, 784, 880, 698, 784, 659, 523, 587, 494,
+    523, 392, 330, 440, 494, 466, 440, 392, 659, 784, 880, 698, 784, 659, 523, 587, 494
+]
+
+
+mario_theme_durations = [
+    0.125, 0.125, 0.125, 0.125, 0.125, 0.25, 0.25, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.25,
+    0.125, 0.125, 0.125, 0.125, 0.125, 0.25, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.125, 0.25, 0.125, 
+    0.125, 0.125, 0.125, 0.125, 0.25
+]
+
+
+
+for i, freq in enumerate(mario_theme_frequencies):
+    playtone(mario_theme_frequencies[i], mario_theme_durations[i] * 1.25)
 
 # Turn off the PWM
 quiet()
