@@ -10,7 +10,7 @@ import json
 
 N: int = 3
 sample_ms = 10.0
-on_ms = 500
+on_ms = 1000
 
 
 def random_time_interval(tmin: float, tmax: float) -> float:
@@ -57,16 +57,21 @@ def scorer(t: list[int | None]) -> None:
     # add key, value to this dict to store the minimum, maximum, average response time
     # and score (non-misses / total flashes) i.e. the score a floating point number
     # is in range [0..1]
-    data = {}
+    data = {
+        "min": min(t_good),
+        "max": max(t_good),
+        "average": sum(t_good) / len(t_good),
+        "score": (float(N) - misses) / N,
+    }
 
     # %% make dynamic filename and write JSON
-
-    now: tuple[int] = time.localtime()
+    now = time.localtime()
 
     now_str = "-".join(map(str, now[:3])) + "T" + "_".join(map(str, now[3:6]))
     filename = f"score-{now_str}.json"
 
     print("write", filename)
+    print(data)
 
     write_json(filename, data)
 
@@ -75,7 +80,7 @@ if __name__ == "__main__":
     # using "if __name__" allows us to reuse functions in other script files
 
     led = Pin("LED", Pin.OUT)
-    button = Pin(16, Pin.IN, Pin.PULL_UP)
+    button = Pin(15, Pin.IN, Pin.PULL_UP)
 
     t: list[int | None] = []
 
@@ -86,11 +91,11 @@ if __name__ == "__main__":
 
         led.high()
 
-        tic = time.ticks_ms()
+        tic = time.ticks_ms()  # type: ignore
         t0 = None
-        while time.ticks_diff(time.ticks_ms(), tic) < on_ms:
+        while time.ticks_diff(time.ticks_ms(), tic) < on_ms:  # type: ignore
             if button.value() == 0:
-                t0 = time.ticks_diff(time.ticks_ms(), tic)
+                t0 = time.ticks_diff(time.ticks_ms(), tic)  # type: ignore
                 led.low()
                 break
         t.append(t0)

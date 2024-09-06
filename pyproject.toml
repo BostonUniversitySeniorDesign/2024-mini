@@ -1,6 +1,28 @@
+[tool.poetry]
+name = "mini-2024"
+version = "0.1.0"
+description = "Ryan Lagoy's Response"
+authors = ["Ryan Lagoy <rlagoy@gmail.com>"]
+readme = "README.md"
+packages = [{include = "2024_mini"}]
+
 [tool.black]
 line-length = 90
 
 [tool.mypy]
 files = ["."]
 ignore_missing_imports = true
+
+[tool.poetry.dependencies]
+python = "^3.10"
+
+[tool.poetry.group.dev.dependencies]
+pylint = "^3.2.7"
+black = "^24.8.0"
+mypy = "^1.11.2"
+pre-commit = "^3.8.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
