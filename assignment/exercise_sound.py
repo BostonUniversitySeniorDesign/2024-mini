@@ -14,26 +14,60 @@ SPEAKER_PIN = 16
 # create a Pulse Width Modulation Object on this pin
 speaker = machine.PWM(machine.Pin(SPEAKER_PIN))
 
-
 def playtone(frequency: float, duration: float) -> None:
     speaker.duty_u16(1000)
-    speaker.freq(frequency)
+    speaker.freq(int(frequency))
     utime.sleep(duration)
 
-
-def quiet():
+def quiet(duration: float):
     speaker.duty_u16(0)
+    utime.sleep(duration)
 
+# Note frequencies from https://muted.io/note-frequencies/
+E = 164.81
+G = 196
+D = 146.83
+C = 130.81
+B = 123.47
+ 
+# Seven Nation Army by The White Stripes https://musescore.com/user/13141226/scores/7605833
+bpm = 124
+beat_dur: float = 60/bpm
 
-freq: float = 30
-duration: float = 0.1  # seconds
+# First part
+while True:
+    playtone(E, beat_dur)
+    quiet(beat_dur)
+    playtone(E, 0.5*beat_dur)
+    quiet(.1*beat_dur)
+    playtone(G, 0.5*beat_dur)
+    quiet(.1*beat_dur)
+    playtone(E, 0.5*beat_dur)
+    quiet(.1*beat_dur)
+    playtone(D, 0.5*beat_dur)
+    quiet(.1*beat_dur)
 
-print("Playing frequency (Hz):")
+    playtone(C, 2*beat_dur)
+    quiet(.1*beat_dur)
+    playtone(B, 2*beat_dur)
+    quiet(.1*beat_dur)
 
-for i in range(64):
-    print(freq)
-    playtone(freq, duration)
-    freq = int(freq * 1.1)
+    # Second part
+    playtone(E, beat_dur)
+    quiet(beat_dur)
+    playtone(E, 0.5*beat_dur)
+    quiet(.1*beat_dur)
+    playtone(G, 0.5*beat_dur)
+    quiet(.1*beat_dur)
+    playtone(E, 0.5*beat_dur)
+    quiet(.1*beat_dur)
+    playtone(D, 0.5*beat_dur)
+    quiet(.1*beat_dur)
 
-# Turn off the PWM
-quiet()
+    playtone(C, 1*beat_dur)
+    quiet(.1*beat_dur)
+    playtone(D, 0.5*beat_dur)
+    quiet(.1*beat_dur)
+    playtone(C, 0.5*beat_dur)
+    quiet(.1*beat_dur)
+    playtone(B, 2*beat_dur)
