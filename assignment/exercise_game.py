@@ -6,9 +6,21 @@ from machine import Pin
 import time
 import random
 import json
+import urequests
 
+import network
+wifi = network.WLAN(network.STA_IF)
+wifi.active(True)
+wifi.connect('BU Guest (unencrypted)')
 
-N: int = 3
+FIREBASE_URL = ""
+OAUTH_TOKEN = ""
+headers = {
+    'Authorization': f'Bearer {OAUTH_TOKEN}',
+    'Content-Type': 'application/json'
+}
+
+N: int = 10
 sample_ms = 10.0
 on_ms = 500
 
@@ -43,6 +55,16 @@ def write_json(json_filename: str, data: dict) -> None:
 
     with open(json_filename, "w") as f:
         json.dump(data, f)
+    
+    if wifi.isconnected():
+        print("Connected to Wi-Fi")
+        print("IP Address:", wifi.ifconfig()[0])
+    else:
+        print("Not connected to Wi-Fi")
+
+    response = urequests.post(FIREBASE_URL, json=data)
+    print(response.text)
+    response.close()
 
 
 def scorer(t: list[int | None]) -> None:
@@ -68,6 +90,11 @@ def scorer(t: list[int | None]) -> None:
 
     print("write", filename)
 
+    if len(t_good) > 0:
+        data["average respose time"] = sum(t_good)/len(t_good)
+        data["minimum response time"] = min(t_good)
+        data["maximum response time"] = max(t_good)
+    
     write_json(filename, data)
 
 
