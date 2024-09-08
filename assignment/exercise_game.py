@@ -13,7 +13,7 @@ wifi = network.WLAN(network.STA_IF)
 wifi.active(True)
 wifi.connect('BU Guest (unencrypted)')
 
-FIREBASE_URL = ""
+FIREBASE_URL = "" #should end in /databases/(default)/documents/COLLECTION_NAME
 OAUTH_TOKEN = ""
 headers = {
     'Authorization': f'Bearer {OAUTH_TOKEN}',
@@ -62,7 +62,15 @@ def write_json(json_filename: str, data: dict) -> None:
     else:
         print("Not connected to Wi-Fi")
 
-    response = urequests.post(FIREBASE_URL, json=data)
+    firestore_data = {
+        "fields": {
+            "average_response_time": {"doubleValue": data.get("average response time", 0)},
+            "minimum_response_time": {"doubleValue": data.get("minimum response time", 0)},
+            "maximum_response_time": {"doubleValue": data.get("maximum response time", 0)}
+        }
+    }
+
+    response = urequests.post(FIREBASE_URL, json=firestore_data)
     print(response.text)
     response.close()
 
@@ -91,7 +99,7 @@ def scorer(t: list[int | None]) -> None:
     print("write", filename)
 
     if len(t_good) > 0:
-        data["average respose time"] = sum(t_good)/len(t_good)
+        data["average response time"] = sum(t_good)/len(t_good)
         data["minimum response time"] = min(t_good)
         data["maximum response time"] = max(t_good)
     
