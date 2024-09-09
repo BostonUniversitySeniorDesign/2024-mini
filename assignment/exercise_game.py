@@ -54,10 +54,28 @@ def scorer(t: list[int | None]) -> None:
 
     print(t_good)
 
+    if len(t)>0:
+        min_time = min(t_good)
+        max_time = max(t_good)
+        avg_time = sum(t_good) / len(t_good)
+    else:
+        min_time = None
+        max_time = None
+        avg_time = None
+
     # add key, value to this dict to store the minimum, maximum, average response time
     # and score (non-misses / total flashes) i.e. the score a floating point number
     # is in range [0..1]
     data = {}
+    if len(t)>0:
+        score = (len(t_good) / len(t))
+    else:
+        score = 0.0
+
+    data["Minimum"] = min_time
+    data["Maximum"] = max_time
+    data["Average"] = avg_time
+    data["Score"] = score
 
     # %% make dynamic filename and write JSON
 
