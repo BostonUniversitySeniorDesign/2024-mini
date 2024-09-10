@@ -17,7 +17,7 @@ under Repository Settings as a read-only Collaborator
 * [Exercise 03](./exercise03.md)
 
 This assignment is done in teams of two students.
-Each student has their own Pico WH, breakout board and circuit components.
+Each student team has their own Pico WH, breakout board and circuit components.
 Each team please use a single Git repo to have as your final assignment submitted.
 
 Graded score is out of 15 points total, 5 points per exercise.

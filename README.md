@@ -4,7 +4,7 @@
 
 This project uses the Raspberry Pi Pico WH (wireless, with header pins).
 
-Each student must provide a USB cable that connects to their laptop and has a micro-USB connector on the other end to plug into the Pi Pico.
+Each student team must provide a USB cable that connects to their laptop and has a micro-USB connector on the other end to plug into the Pi Pico.
 The student laptop is used to program the Pi Pico.
 The laptop software works on macOS, Windows, and Linux.
 
