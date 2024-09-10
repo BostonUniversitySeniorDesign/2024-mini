@@ -4,7 +4,10 @@
 
 This project uses the Raspberry Pi Pico WH (wireless, with header pins).
 
-Each student must provide a USB cable that connects to their laptop and has a micro-USB connector on the other end to plug into the Pi Pico.
+Each student team must provide a USB cable that connects to their laptop and has a micro-USB connector on the other end to plug into the Pi Pico.
+The cord must have the data pins connected.
+Splitter cords with multiple types of connectors fanning out often are only for charging and don't have data pins connected.
+Such micro-USB cords can be found at MIcrocenter in Cambridge, or the convenience store, pharmacy, etc.
 The student laptop is used to program the Pi Pico.
 The laptop software works on macOS, Windows, and Linux.
 
