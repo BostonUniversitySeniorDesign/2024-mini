@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-PWM Tone Generator - Plays a simple song
+PWM Tone Generator
 
 based on https://www.coderdojotc.org/micropython/sound/04-play-scale/
 """
@@ -9,53 +9,65 @@ import machine
 import utime
 
 # GP16 is the speaker pin
-SPEAKER_PIN = 16
+SPEAKER_PIN = 22
 
-# Create a Pulse Width Modulation (PWM) object on this pin
+# create a Pulse Width Modulation Object on this pin
 speaker = machine.PWM(machine.Pin(SPEAKER_PIN))
 
-NOTES = {
-    'C4': 261,
-    'D4': 294,
-    'E4': 329,
-    'F4': 349,
-    'G4': 392,
-    'A4': 440,
-    'B4': 494,
-    'C5': 523
-}
+# Define note frequencies (in Hz)
+A_SHARP4 = int(466.16)  # A#4
+G_SHARP4 = int(415.30)  # G#4
+F_SHARP4 = int(369.99)  # F#4
+E_SHARP4 = int(349.23)  # E#4 (enharmonic to F4)
+D_SHARP4 = int(1244.51)  # D#4
+C_SHARP4 = int(277.18)  # C#4
+B3 = int(493.88)        # B3
 
-# Song: (Twinkle, Twinkle, Little Star)
-melody = [
-    ('C4', 0.5), ('C4', 0.5), ('G4', 0.5), ('G4', 0.5),
-    ('A4', 0.5), ('A4', 0.5), ('G4', 1.0),
-    ('F4', 0.5), ('F4', 0.5), ('E4', 0.5), ('E4', 0.5),
-    ('D4', 0.5), ('D4', 0.5), ('C4', 1.0)
+
+tokyo_drift_melody = [
+    (A_SHARP4, 0.3), (None, 0.1),
+    (A_SHARP4, 0.3), (None, 0.1),
+    (A_SHARP4, 0.3), (None, 0.1),
+    (A_SHARP4, 0.3), (None, 0.1),
+    (A_SHARP4, 0.3), (B3, 0.3),
+    (D_SHARP4, 0.3),
+    (A_SHARP4, 0.3), (None, 0.1),
+    (A_SHARP4, 0.3), (None, 0.1),
+    (A_SHARP4, 0.3), (B3, 0.3),
+    (D_SHARP4, 0.3),
+    (A_SHARP4, 0.3), (None, 0.1),
+    (A_SHARP4, 0.3), (None, 0.1),
+    (A_SHARP4, 0.3), (B3, 0.3),
+    (D_SHARP4, 0.3),
+    (A_SHARP4, 0.3), (None, 0.1),
+    (A_SHARP4, 0.3), (None, 0.1),
+    (A_SHARP4, 0.3), (B3, 0.3),
+    (D_SHARP4, 0.3),
+    (A_SHARP4, 0.3), (None, 0.1),
+    (A_SHARP4, 0.3), (None, 0.1),
+    
 ]
 
 def playtone(frequency: float, duration: float) -> None:
-    """Play a tone at a specified frequency and duration"""
-    speaker.duty_u16(1000)  # Set volume (duty cycle)
-    speaker.freq(frequency)  # Set frequency of the tone
-    utime.sleep(duration)  # Play for the specified duration
-
-def quiet():
-    """Silence the speaker"""
-    speaker.duty_u16(0)  # Set volume to 0
-
-def play_song(melody: list[tuple[str, float]]) -> None:
-    """Play a sequence of notes from a song"""
-    for note, duration in melody:
-        frequency = NOTES.get(note, 0)  # Get frequency of the note
-        if frequency:
-            print(f"Playing note: {note} (Frequency: {frequency} Hz)")
-            playtone(frequency, duration)
-        quiet()  # Silence between notes
-        utime.sleep(0.1)  # Short pause between notes
-
-if __name__ == "__main__":
-    # Play the song
-    play_song(melody)
+    if frequency is not None:
+        speaker.duty_u16(1000)
+        speaker.freq(frequency)
+        utime.sleep(duration)
+        quiet()                  # Stop sound after each note
+    else:
+        utime.sleep(duration)
     
-    # Turn off the PWM to stop sound
-    quiet()
+def quiet():
+    speaker.duty_u16(0)
+
+
+freq: float = 30
+duration: float = 0.1  # seconds
+
+print("Playing Tokyo Drift Melody:")
+
+for note, duration in tokyo_drift_melody:
+    playtone(note, duration)
+
+# Turn off the PWM
+quiet()
