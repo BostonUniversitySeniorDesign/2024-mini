@@ -13,7 +13,7 @@ wifi = network.WLAN(network.STA_IF)
 wifi.active(True)
 wifi.connect('BU Guest (unencrypted)')
 
-FIREBASE_URL = "" #should end in /databases/(default)/documents/COLLECTION_NAME
+FIREBASE_URL = "https://firestore.googleapis.com/v1/projects/ec463-mini-project-ex3/databases/(default)/documents/scores" #should end in /databases/(default)/documents/COLLECTION_NAME
 OAUTH_TOKEN = ""
 headers = {
     'Authorization': f'Bearer {OAUTH_TOKEN}',
