@@ -3,7 +3,7 @@ max_bright = 45000
 
 min_bright = 25000  
 
-based on my room with lights on vs. off
+based on my room with lights on vs. off during late afternoon (dim vs. bright)
 
 # Exercise 2
 Updated exercise_sound.py to play Seven Nation Army by The White Stripes
