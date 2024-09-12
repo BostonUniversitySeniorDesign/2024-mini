@@ -1,24 +1,17 @@
 import React from 'react';
-import { auth, provider } from './firebaseConfig';
-import { signInWithPopup } from 'firebase/auth';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import Login from './Login';
+import Notes from './Notes';
 
 const App = () => {
-  const handleGoogleLogin = async () => {
-    try {
-      const result = await signInWithPopup(auth, provider);
-      const user = result.user;
-      console.log('User Info:', user);
-      // Here you can add the user to Firestore or handle user data as needed
-    } catch (error) {
-      console.error('Error during login:', error);
-    }
-  };
-
   return (
-    <div className="App">
-      <h1>Gmail Login with Firebase</h1>
-      <button onClick={handleGoogleLogin}>Login with Google</button>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/notes" element={<Notes />} />
+        <Route path="*" element={<Navigate to="/" />} />
+      </Routes>
+    </Router>
   );
 };
 
