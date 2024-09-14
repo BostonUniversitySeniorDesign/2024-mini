@@ -6,6 +6,7 @@ from machine import Pin
 import time
 import random
 import json
+import requests
 
 
 N: int = 3
@@ -69,6 +70,9 @@ def scorer(t: list[int | None]) -> None:
     print("write", filename)
 
     write_json(filename, data)
+
+    database_api_url = "https://mini-project-9642d-default-rtdb.firebaseio.com"
+	response = requests.post(database_api_url, json=score_dict)
 
 
 if __name__ == "__main__":
