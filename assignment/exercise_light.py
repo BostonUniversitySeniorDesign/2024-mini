@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Use analog input with photocell
+Use analog input with photoresistor to control the apparent brightness of the LED.
 """
 
 import time
