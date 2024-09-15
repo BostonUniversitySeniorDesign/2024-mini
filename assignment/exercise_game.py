@@ -6,12 +6,27 @@ from machine import Pin
 import time
 import random
 import json
+import requests
+import network
 
-
-N: int = 3
+N: int = 10
 sample_ms = 10.0
 on_ms = 500
 
+def connect_to_wifi(ssid):
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    wlan.connect(ssid)
+    
+    if wlan.isconnected():
+        print("Connected to WiFi")
+    else:
+        print("Failed to connect to WiFi")
+        
+ssid = 'BU Guest (unencrypted)'
+connect_to_wifi(ssid)
+
+database_api_url = "https://mini-c686c-default-rtdb.firebaseio.com/"
 
 def random_time_interval(tmin: float, tmax: float) -> float:
     """return a random time interval between max and min"""
@@ -57,7 +72,19 @@ def scorer(t: list[int | None]) -> None:
     # add key, value to this dict to store the minimum, maximum, average response time
     # and score (non-misses / total flashes) i.e. the score a floating point number
     # is in range [0..1]
-    data = {}
+    if t_good:
+        min_time = min(t_good)
+        max_time = max(t_good)
+        avg_time = sum(t_good) / len(t_good)
+        score = (len(t) - misses) / len(t)
+    else:
+        min_time = max_time = avg_time = score = 0
+    data = {
+        "min_time": min_time,
+        "max_time": max_time,
+        "average_time": avg_time,
+        "score": score
+        }
 
     # %% make dynamic filename and write JSON
 
@@ -69,6 +96,16 @@ def scorer(t: list[int | None]) -> None:
     print("write", filename)
 
     write_json(filename, data)
+    
+    return data
+
+def upload_to_firebase(user_number: str, data: dict) -> None:
+    firebase_api_url = f"{database_api_url}/{user_number}.json"
+    response = requests.put(firebase_api_url, json=data)
+    if response.status_code == 200:
+        print(f"Data successfully uploaded to Firebase")
+    else:
+        print(f"Failed to upload data. Status code: {response.status_code}, Response: {response.text}")
 
 
 if __name__ == "__main__":
@@ -99,4 +136,7 @@ if __name__ == "__main__":
 
     blinker(5, led)
 
-    scorer(t)
+    data = scorer(t)
+    current_time = time.localtime()
+    user_number = "user_" + "_".join(map(str, current_time[:6]))
+    upload_to_firebase(user_number, data)
