@@ -9,7 +9,7 @@ import json
 
 
 N: int = 3
-sample_ms = 10.0
+sample_ms = 10
 on_ms = 500
 
 
