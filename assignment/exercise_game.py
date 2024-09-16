@@ -1,64 +1,66 @@
-"""
-Response time - single-threaded
-"""
-from machine import Pin
+import machine
 import time
 import random
-import json
-import urequests  # For making HTTP requests to the Firebase
+import ujson
+import network
+import socket
+import ssl
 
-N = 10  # Set number of flashes to 10
-sample_ms = 10.0
-on_ms = 500
+def load_config():
+    try:
+        with open('config.json', 'r') as f:
+            config = ujson.load(f)
+            return config
+    except Exception as e:
+        print("Error loading configuration:", e)
+        return None
 
-# Firebase configuration
-firebase_url = "https://miniprojectec463-default-rtdb.firebaseio.com/scores.json"  # Firebase Realtime Database URL
-firebase_api_key = "AIzaSyCNoL0F0a8lNjoSqAkw1A7UWRQRJoUJWUK"  # Firebase API key
+config = load_config()
+if config is None:
+    raise Exception("Configuration file not found or invalid.")
+#CREDENTIALS IN CONFIG FILE
+SSID = config.get("SSID")
+PASSWORD = config.get("PASSWORD")
+api_url = config.get("api_url")
+device_api_key = config.get("device_api_key")
+user_id = config.get("user_id")
 
-def send_to_firebase(data: dict) -> None:
-    """Sends data to Firebase using HTTP POST."""
-    headers = {
-        'Content-Type': 'application/json',
-        'Authorization': f'Bearer {firebase_api_key}'  # API key for authentication
-    }
-    response = urequests.post(firebase_url, headers=headers, data=json.dumps(data))
-    print("Firebase response:", response.text)
-    response.close()
+#Initialize LED and Button
+led = machine.Pin("LED", machine.Pin.OUT)
+button = machine.Pin(16, machine.Pin.IN, machine.Pin.PULL_UP)
 
+N = 10  # Number of flashes
 
-
+def connect_wifi():
+    wlan = network.WLAN(network.STA_IF)
+    wlan.active(True)
+    if not wlan.isconnected():
+        print('Connecting to network...')
+        wlan.connect(SSID, PASSWORD)
+        timeout = 10  # seconds
+        start_time = time.time()
+        while not wlan.isconnected():
+            if time.time() - start_time > timeout:
+                print('Could not connect to Wi-Fi')
+                return False
+            time.sleep(1)
+    print('Connected to Wi-Fi')
+    print('Network config:', wlan.ifconfig())
+    return True
 
 def random_time_interval(tmin: float, tmax: float) -> float:
-    """Return a random time interval between max and min."""
     return random.uniform(tmin, tmax)
 
-
-def blinker(N: int, led: Pin) -> None:
-    """Let user know the game started/is over by blinking the LED."""
+def blinker(N: int, led: machine.Pin) -> None:
     for _ in range(N):
-        led.high()
+        led.on()
         time.sleep(0.1)
-        led.low()
+        led.off()
         time.sleep(0.1)
 
-def write_json(json_filename: str, data: dict) -> None:
-    """Writes data to a JSON file."""
-    with open(json_filename, "w") as f:
-        json.dump(data, f)
-
-def send_to_firebase(data: dict) -> None:
-    """Sends data to Firebase using HTTP POST."""
-    headers = {'Content-Type': 'application/json'}
-    response = urequests.post(firebase_url, headers=headers, data=json.dumps(data))
-    print("Firebase response:", response.text)
-    response.close()
-
-def scorer(t: list[int | None]) -> None:
-    """Collates and computes statistics and sends data to Firebase."""
-    # Calculate statistics
+def scorer(t: list[int | None]) -> dict:
     misses = t.count(None)
     t_good = [x for x in t if x is not None]
-    
     if t_good:
         min_time = min(t_good)
         max_time = max(t_good)
@@ -66,54 +68,88 @@ def scorer(t: list[int | None]) -> None:
     else:
         min_time = max_time = avg_time = None
 
-    # Prepare thedata dictionary
     data = {
+        "user_id": user_id,
         "misses": misses,
         "total_flashes": len(t),
         "min_time": min_time,
         "max_time": max_time,
         "avg_time": avg_time,
-        "score": (len(t) - misses) / len(t),  # Score as a floating-point number between 0 and 1
-        "timestamp": time.localtime()  # Add timestamp
+        "score": (len(t) - misses) / len(t),
+        "timestamp": time.time(),
+        "response_times": t_good 
     }
+    return data
 
-    # Make dynamic filename and write JSON locally (optional)
-    now = time.localtime()
-    now_str = "-".join(map(str, now[:3])) + "T" + "_".join(map(str, now[3:6]))
-    filename = f"score-{now_str}.json"
-    write_json(filename, data)
 
-    # Send data to Firebase
-    send_to_firebase(data)
+def send_https_request(url, headers, data):
+    try:
+        print("Preparing to send data...")
+        print("URL:", url)
+        print("Headers:", headers)
+        print("Data:", data)
+        
+        _, _, host, path = url.split('/', 3)
+        print("Host:", host)
+        print("Path:", path)
+        addr_info = socket.getaddrinfo(host, 443)
+        addr = addr_info[0][-1]
+        s = socket.socket()
+        s.connect(addr)
+        s = ssl.wrap_socket(s, server_hostname=host)
+        request = "POST /{} HTTP/1.1\r\nHost: {}\r\n".format(path, host)
+        for k, v in headers.items():
+            request += "{}: {}\r\n".format(k, v)
+        request += "Content-Length: {}\r\n\r\n".format(len(data))
+        request += data
+        print("Request:\n", request)
+        s.write(request.encode())
+        response = s.read(1024)
+        s.close()
+        return response
+    except Exception as e:
+        print("Error sending data:", e)
+        return None
+
 
 if __name__ == "__main__":
-    # Using "if __name__" allows us to reuse functions in other script files.
-    led = Pin("LED", Pin.OUT)
-    button = Pin(16, Pin.IN, Pin.PULL_UP)
+    if not connect_wifi():
+        raise Exception("Failed to connect to Wi-Fi")
 
     t: list[int | None] = []
 
     # Indicate game start
     blinker(3, led)
 
-    for i in range(N):
+    for _ in range(N):
         time.sleep(random_time_interval(0.5, 5.0))
 
-        led.high()
+        led.on()
 
         tic = time.ticks_ms()
         t0 = None
-        while time.ticks_diff(time.ticks_ms(), tic) < on_ms:
+        while time.ticks_diff(time.ticks_ms(), tic) < 500:
             if button.value() == 0:
                 t0 = time.ticks_diff(time.ticks_ms(), tic)
-                led.low()
+                led.off()
                 break
         t.append(t0)
 
-        led.low()
+        led.off()
 
     # Indicate game over
     blinker(5, led)
 
-    # Process results and send to Firebase
-    scorer(t)
+    # Process results and send to API
+    data = scorer(t)
+    headers = {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer {}'.format(device_api_key)
+    }
+    data_json = ujson.dumps(data)
+    response = send_https_request(api_url, headers, data_json)
+    if response:
+        print("API response:", response.decode())
+    else:
+        print("Failed to receive a response.")
+
