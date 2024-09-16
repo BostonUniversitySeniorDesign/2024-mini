@@ -9,7 +9,7 @@ const app = express();
 app.use(cors({origin: true}));
 app.use(express.json());
 
-// Middleware to check the device API key
+//Middleware to check the device API key
 const validateApiKey = (req, res, next) => {
   const authHeader = req.headers.authorization;
   const apiKey =
