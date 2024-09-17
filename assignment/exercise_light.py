@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Use analog input with photocell
+Use analog input with photoresistor to control the apparent brightness of the LED.
 """
 
 import time
@@ -14,8 +14,8 @@ adc = machine.ADC(ADC2)
 
 blink_period = 0.1
 
-max_bright = 20000
-min_bright = 10000
+max_bright = 55000
+min_bright = 3000
 
 
 def clip(value: float) -> float:
