@@ -22,15 +22,15 @@ def generate_uuid4():
 now = time.localtime()
 now_str = "-".join(map(str, now[:3])) + "T" + ":".join(map(str, now[3:6]))
 
-
+score_list = [random.random(), random.random()]
 data_dict = {
     "id": generate_uuid4(),
-    "user": [1],
+    "user": [2],
     "timestamp": now_str,
-    "max_time_s": 0.5,
-    "min_time_s": 0.1,
-    "average_time_s": 0.1,
-    "score": 2,
+    "max_time_s": max(score_list),
+    "min_time_s": min(score_list),
+    "average_time_s": sum(score_list) / len(score_list),
+    "score": 3,
 }
 
 print(data_dict)

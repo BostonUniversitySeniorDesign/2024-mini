@@ -34,7 +34,7 @@ Other IDE can be used, including Visual Studio Code or
     1. One may run pylint in this environment by typing: `poetry run pylint *`
 
 3. `mypy` is added as a dependency for type checking. This ensures you don't do silly things like suming an int with a string.
-    1. One may run pylint in this environment by typing: `poetry run mypy *`
+    1. One may run mypy in this environment by typing: `poetry run mypy *`
 
 4. `pre-commit` is added as a dev dependency for a pre-commit hook for `git`. This tool is configured with the `.pre-commit-config.yaml` and is one of the most convenient tools when collaborating with teams, as it automatically fixes your files or alerts you about problems before a commit is made.
    1. `black` (an automatic python code formatter) is run before you make a commit with git.

@@ -2,17 +2,21 @@
 Response time - single-threaded
 """
 
-from machine import Pin
 import time
 import random
 import json
-import requests
 import struct
-import network
+import requests
+import network  # pylint: disable=import-error
+from machine import Pin  # pylint: disable=import-error
 
 N: int = 3
-sample_ms = 10.0
-on_ms = 1000
+SAMPLE_MS = 10.0
+ON_MS = 1000
+LED = Pin("LED", Pin.OUT)
+BUTTON = Pin(15, Pin.IN, Pin.PULL_UP)
+SSID = "EndlessSummer"
+PASSWORD = "Nikiti77"
 
 
 def random_time_interval(tmin: float, tmax: float) -> float:
@@ -20,10 +24,9 @@ def random_time_interval(tmin: float, tmax: float) -> float:
     return random.uniform(tmin, tmax)
 
 
-def blinker(N: int, led: Pin) -> None:
-    # %% let user know game started / is over
-
-    for _ in range(N):
+def blinker(led: Pin, samples: int = N) -> None:
+    """Blink the LED N times to indicate the start or end of the game."""
+    for _ in range(samples):
         led.high()
         time.sleep(0.1)
         led.low()
@@ -43,11 +46,13 @@ def write_json(json_filename: str, data: dict) -> None:
         Dictionary data to write to the file.
     """
 
-    with open(json_filename, "w") as f:
+    with open(json_filename, "w", encoding="utf-8") as f:
         json.dump(data, f)
 
 
 def generate_uuid4():
+    """Generate a random UUID version 4."""
+
     # Generate 16 random bytes
     random_bytes = bytearray(random.getrandbits(8) for _ in range(16))
 
@@ -59,10 +64,13 @@ def generate_uuid4():
 
     # Convert bytes to a UUID string
     uuid_str = struct.unpack(">IHH8B", random_bytes)
-    return f"{uuid_str[0]:08x}-{uuid_str[1]:04x}-{uuid_str[2]:04x}-{uuid_str[3]:02x}{uuid_str[4]:02x}-77{uuid_str[5]:02x}{uuid_str[6]:02x}{uuid_str[7]:02x}{uuid_str[8]:02x}{uuid_str[9]:02x}"
+    return f"""{uuid_str[0]:08x}-{uuid_str[1]:04x}-{uuid_str[2]:04x}-{uuid_str[3]:02x}
+    {uuid_str[4]:02x} -77{uuid_str[5]:02x}{uuid_str[6]:02x}{uuid_str[7]:02x}
+    {uuid_str[8]:02x}{uuid_str[9]:02x}"""
 
 
 def scorer(t: list[int | None]) -> None:
+    """Scorer function to calculate the score of the game."""
     # %% collate results
     misses = t.count(None)
     print(f"You missed the light {misses} / {len(t)} times")
@@ -79,7 +87,7 @@ def scorer(t: list[int | None]) -> None:
 
     data_dict = {
         "id": generate_uuid4(),
-        "user": [1],
+        "user": ["rlagoy@gmail.com"],
         "timestamp": now_str,
         "max_time_s": max(t_good) / 1000.0,
         "min_time_s": min(t_good) / 1000.0,
@@ -95,20 +103,19 @@ def scorer(t: list[int | None]) -> None:
 
     # Write data to database with REST API
     database_api_url = "https://halara.cloud/pico/pico-data/"
-    response = requests.post(database_api_url, json=data_dict)
+    response = requests.post(
+        database_api_url, json=data_dict
+    )  # pylint: disable=missing-timeout
     print(response)
 
 
-if __name__ == "__main__":
-    # using "if __name__" allows us to reuse functions in other script files
-
+def main():
+    """Main function to run the game"""
     # Connect to Wi-Fi
-    ssid = "EndlessSummer"
-    password = "Nikiti77"
 
     station = network.WLAN(network.STA_IF)
     station.active(True)
-    station.connect(ssid, password)
+    station.connect(SSID, PASSWORD)
 
     # Wait for connection
     while not station.isconnected():
@@ -116,29 +123,31 @@ if __name__ == "__main__":
 
     print("Connected to Wi-Fi")
 
-    led = Pin("LED", Pin.OUT)
-    button = Pin(15, Pin.IN, Pin.PULL_UP)
-
     t: list[int | None] = []
 
-    blinker(3, led)
+    blinker(LED, 3)
 
-    for i in range(N):
+    for _ in range(N):
         time.sleep(random_time_interval(0.5, 5.0))
 
-        led.high()
+        LED.high()
 
-        tic = time.ticks_ms()  # type: ignore
+        tic = time.ticks_ms()  # type: ignore, pylint: disable=no-member
         t0 = None
-        while time.ticks_diff(time.ticks_ms(), tic) < on_ms:  # type: ignore
-            if button.value() == 0:
-                t0 = time.ticks_diff(time.ticks_ms(), tic)  # type: ignore
-                led.low()
+        while time.ticks_diff(time.ticks_ms(), tic) < ON_MS:  # type: ignore, pylint: disable=no-member
+            if BUTTON.value() == 0:
+                t0 = time.ticks_diff(time.ticks_ms(), tic)  # type: ignore, pylint: disable=no-member
+                LED.low()
                 break
         t.append(t0)
 
-        led.low()
+        LED.low()
 
-    blinker(5, led)
+    blinker(LED, 5)
 
     scorer(t)
+
+
+if __name__ == "__main__":
+    # using "if __name__" allows us to reuse functions in other script files
+    main()
