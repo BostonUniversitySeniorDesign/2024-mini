@@ -21,6 +21,8 @@ On the cloud side of things, a Django project was created that implemented the f
 4. Created a dashboard with bootstrap formating
 
 The source code for this project can be found here: https://github.com/rlagoy/2024-mini-cloud.
-There is a deploy folder which includes all of the required files for deploying to a droplet.
+There is a deploy folder which includes all of the required files for deploying to a Digital Ocean droplet.
+
+View the webUI at halara.cloud in your browser.
 
 Lastly, the final code wasn't tested on the RasPi, since one of the students borrowed mine, and I wasn't able to re-test.
